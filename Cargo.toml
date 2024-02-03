@@ -1,0 +1,9 @@
+[package]
+name = "rusty_watch"
+version = "0.1.0"
+authors = ["https://github.com/cooscoos/"]
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+chrono = "0.4.33"
