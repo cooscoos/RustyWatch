@@ -26,8 +26,20 @@ async fn main() {
 
     tokio::select! {
         _ = keypress_handle => {
-            let elapsed = elapsed_time_handle.await.unwrap();
-            println!("\r\nExited. Total elapsed time: {:?}", elapsed);
+            let elapsed_string = elapsed_time_handle.await.unwrap();
+
+            // Open the log file in append mode
+            let mut file = std::fs::OpenOptions::new()
+                .append(true)
+                .create(true)
+                .open("log.txt")
+                .unwrap();
+
+            // Write the elapsed time and the current timestamp to the log file
+            let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S,%a").to_string();
+            writeln!(file, "{},{}", timestamp, elapsed_string).unwrap();
+
+            println!("\r\nExited, saved to log");
         }
     }
 }
@@ -60,10 +72,10 @@ async fn keypress_listen(pause: Arc<AtomicBool>, quit: Arc<AtomicBool>) {
 
 /// Prints elapsed time every second and handles pause toggles.
 /// Returns the elapsed time when the function ends.
-async fn elapsed_time(pause: Arc<AtomicBool>, quit: Arc<AtomicBool>) -> chrono::Duration {
+async fn elapsed_time(pause: Arc<AtomicBool>, quit: Arc<AtomicBool>) -> String {
     let mut start_time = Local::now();
     let mut pause_start_time: Option<chrono::DateTime<Local>> = None;
-    let mut elapsed = chrono::Duration::zero();
+    let mut elapsed_string = String::new();
 
     loop {
         tokio::time::sleep(Duration::from_secs(1)).await;
@@ -83,16 +95,17 @@ async fn elapsed_time(pause: Arc<AtomicBool>, quit: Arc<AtomicBool>) -> chrono::
                 start_time = start_time + (Local::now() - pause_start);
                 pause_start_time = None;
             }
-            elapsed = Local::now() - start_time;
-            print!(
-                "\rElapsed time: {:02}:{:02}:{:02}",
+            let elapsed = Local::now() - start_time;
+            elapsed_string = format!(
+                "{:02}:{:02}:{:02}",
                 elapsed.num_hours(),
                 elapsed.num_minutes() % 60,
                 elapsed.num_seconds() % 60
             );
+            print!("\rElapsed time: {}", elapsed_string);
             io::stdout().flush().unwrap();
         }
     }
 
-    elapsed
+    elapsed_string
 }
