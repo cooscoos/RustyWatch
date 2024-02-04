@@ -26,7 +26,7 @@ async fn main() {
             let mut file = std::fs::OpenOptions::new()
                 .append(true)
                 .create(true)
-                .open("log.txt")
+                .open("log.csv")
                 .unwrap();
 
             let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S,%a").to_string();
