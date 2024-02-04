@@ -17,9 +17,9 @@ use tokio::time::Duration;
 async fn main() {
     println!("\nPress 'q' to quit, or 'p' to pause and resume the timer.");
 
-    let is_paused = Arc::new(AtomicBool::new(false));
-    tokio::spawn(elapsed_time(is_paused.clone()));
-    let keypress_handle = tokio::spawn(keypress_listen(is_paused));
+    let pause = Arc::new(AtomicBool::new(false));
+    tokio::spawn(elapsed_time(pause.clone()));
+    let keypress_handle = tokio::spawn(keypress_listen(pause));
 
     tokio::select! {
     _ = keypress_handle => {
@@ -51,7 +51,7 @@ async fn keypress_listen(pause: Arc<AtomicBool>) {
     terminal::disable_raw_mode().unwrap();
 }
 
-/// Prints elapsed time every second and handles pauses.
+/// Prints elapsed time every second and handles pause toggles.
 async fn elapsed_time(pause: Arc<AtomicBool>) {
     let mut start_time = Local::now();
     let mut pause_start_time: Option<chrono::DateTime<Local>> = None;
@@ -59,23 +59,24 @@ async fn elapsed_time(pause: Arc<AtomicBool>) {
     loop {
         tokio::time::sleep(Duration::from_secs(1)).await;
         let is_paused = pause.load(Ordering::Relaxed);
+
         if is_paused {
             if pause_start_time.is_none() {
                 pause_start_time = Some(Local::now());
             }
-            continue;
+        } else {
+            if let Some(pause_start) = pause_start_time {
+                start_time = start_time + (Local::now() - pause_start);
+                pause_start_time = None;
+            }
+            let elapsed = Local::now() - start_time;
+            print!(
+                "\rElapsed time: {}h{}m{}s",
+                elapsed.num_hours(),
+                elapsed.num_minutes(),
+                elapsed.num_seconds()
+            );
+            io::stdout().flush().unwrap();
         }
-        if let Some(pause_start) = pause_start_time {
-            start_time = start_time + (Local::now() - pause_start);
-            pause_start_time = None;
-        }
-        let elapsed = Local::now() - start_time;
-        print!(
-            "\rElapsed time: {}h{}m{}s",
-            elapsed.num_hours(),
-            elapsed.num_minutes(),
-            elapsed.num_seconds()
-        );
-        io::stdout().flush().unwrap();
     }
 }
