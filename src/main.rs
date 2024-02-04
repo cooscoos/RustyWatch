@@ -1,7 +1,10 @@
-use std::io::{self, Write};
-
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::{
+    io::{self, Write},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use chrono::Local;
 use crossterm::{
@@ -12,21 +15,23 @@ use tokio::time::Duration;
 
 #[tokio::main]
 async fn main() {
-    println!("\nPress q to quit, p to pause and resume.");
-    let pause = Arc::new(AtomicBool::new(false));
-    tokio::spawn(countdown(pause.clone()));
-    let keypress_handle = tokio::spawn(keypress_listen(pause));
+    println!("\nPress 'q' to quit, or 'p' to pause and resume the timer.");
+
+    let is_paused = Arc::new(AtomicBool::new(false));
+    tokio::spawn(elapsed_time(is_paused.clone()));
+    let keypress_handle = tokio::spawn(keypress_listen(is_paused));
 
     tokio::select! {
     _ = keypress_handle => {
-        println!("\nKey press. Cancelling timer.");
+        println!("\nExited.");
     }
     }
 }
 
 /// Checks for keypresses every 100 ms and acts accordingly.
 async fn keypress_listen(pause: Arc<AtomicBool>) {
-    let _raw = terminal::enable_raw_mode().unwrap();
+    // raw mode allows keypresses to be read without needing to press enter.
+    terminal::enable_raw_mode().unwrap();
 
     loop {
         if event::poll(std::time::Duration::from_millis(100)).unwrap() {
@@ -46,8 +51,8 @@ async fn keypress_listen(pause: Arc<AtomicBool>) {
     terminal::disable_raw_mode().unwrap();
 }
 
-/// Prints the elapsed time every second.
-async fn countdown(pause: Arc<AtomicBool>) {
+/// Prints elapsed time every second and handles pauses.
+async fn elapsed_time(pause: Arc<AtomicBool>) {
     let mut start_time = Local::now();
     let mut pause_start_time: Option<chrono::DateTime<Local>> = None;
 
