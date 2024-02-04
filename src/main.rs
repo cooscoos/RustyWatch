@@ -11,7 +11,7 @@ const HELP: &str = r#"Press 'q' to quit, or 'p' to pause and resume the timer."#
 
 #[tokio::main]
 async fn main() {
-    println!("{}", HELP);
+    println!("\n{}", HELP);
 
     let pause = Arc::new(AtomicBool::new(false));
     let quit = Arc::new(AtomicBool::new(false));
@@ -32,7 +32,7 @@ async fn main() {
             let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S,%a").to_string();
             writeln!(file, "{},{}", timestamp, elapsed_string).unwrap();
 
-            println!("\r\nExited and saved to log");
+            println!("\r\nExited and saved to log.csv\n");
         }
     }
 }
