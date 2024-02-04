@@ -13,9 +13,11 @@ use crossterm::{
 };
 use tokio::time::Duration;
 
+const HELP: &str = r#"Press 'q' to quit, or 'p' to pause and resume the timer."#;
+
 #[tokio::main]
 async fn main() {
-    println!("\nPress 'q' to quit, or 'p' to pause and resume the timer.");
+    println!("{}", HELP);
 
     let pause = Arc::new(AtomicBool::new(false));
     tokio::spawn(elapsed_time(pause.clone()));
@@ -71,7 +73,7 @@ async fn elapsed_time(pause: Arc<AtomicBool>) {
             }
             let elapsed = Local::now() - start_time;
             print!(
-                "\rElapsed time: {}h{}m{}s",
+                "\rElapsed time: {:02}:{:02}:{:02}",
                 elapsed.num_hours(),
                 elapsed.num_minutes(),
                 elapsed.num_seconds()
