@@ -25,7 +25,7 @@ with open('log.csv', 'r') as file:
         time_str = row[-1]
         h, m, s = map(int, time_str.split(':'))
         total_time[day_of_week] += timedelta(hours=h, minutes=m, seconds=s)
-
+print("")
 for day, time in total_time.items():
     print(f"{day}\t{nice_format_time(time)}")
 
