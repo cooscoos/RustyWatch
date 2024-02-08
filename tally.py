@@ -10,11 +10,12 @@ total_time = {
     'Fri': timedelta(),
 }
 
-def nice_format_time(time: time) -> str:
+def nice_format_time(time: timedelta) -> str:
     """
     Format a time to HH:MM:SS string with leading zeros
     """
-    hours, remainder = divmod(time.seconds, 3600)
+    total_seconds = int(time.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{str(hours).zfill(2)}:{str(minutes).zfill(2)}:{str(seconds).zfill(2)}"
 
