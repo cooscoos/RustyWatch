@@ -27,11 +27,11 @@ with open('log.csv', 'r') as file:
         total_time[day_of_week] += timedelta(hours=h, minutes=m, seconds=s)
 print("")
 for day, time in total_time.items():
-    print(f"{day}\t{nice_format_time(time)}")
+    print(f"\t{day}\t{nice_format_time(time)}")
 
 total_time = sum(total_time.values(), timedelta())
-print(f"""-----------------
-Tot\t{nice_format_time(total_time)}
------------------\n""")
+print(f"""\t-----------------
+\tTot\t{nice_format_time(total_time)}
+\t-----------------\n""")
 # %%
 # %%
